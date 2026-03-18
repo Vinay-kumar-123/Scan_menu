@@ -1,0 +1,313 @@
+# from fastapi import APIRouter, HTTPException, Depends
+# from datetime import datetime
+# from bson import ObjectId
+# from app.core.subscription import subscription_guard
+# from app.models.order import OrderCreate
+# from app.database.mongodb import db
+# from app.core.deps import get_current_user
+
+# router = APIRouter(prefix="/order", tags=["Order"])
+
+# orders = db.orders
+
+# @router.post("/create")
+# def create_order(data: OrderCreate):
+
+#     products_data = []
+
+#     # =========================
+#     # ✅ STEP 1: VALIDATION ONLY
+#     # =========================
+#     for item in data.items:
+
+#         product = db.products.find_one({
+#             "_id": ObjectId(item.product_id)
+#         })
+
+#         if not product:
+#             raise HTTPException(404, "Product not found")
+
+#         if product["stock"] < item.qty:
+#             raise HTTPException(
+#                 status_code=400,
+#                 detail=f"Only {product['stock']} {product['name']} available"
+#             )
+
+#         products_data.append(product)
+
+#     # =========================
+#     # ✅ STEP 2: UPDATE STOCK
+#     # =========================
+#     updated_items = []
+#     total = 0
+
+#     for item, product in zip(data.items, products_data):
+
+#         new_stock = product["stock"] - item.qty
+
+#         db.products.update_one(
+#             {"_id": product["_id"]},
+#             {"$set": {"stock": new_stock}}
+#         )
+
+#         updated_items.append({
+#             "name": product["name"],
+#             "price": product["price"],
+#             "qty": item.qty
+#         })
+
+#         total += product["price"] * item.qty
+
+#     # =========================
+#     # ✅ STEP 3: CREATE ORDER
+#     # =========================
+#     new_order = {
+#         "store_id": data.store_id,
+#         "customer_name": data.customer_name,
+#         "table": data.table,
+#         "items": updated_items,
+#         "total": total,
+#         "status": "pending",
+#         "created_at": datetime.utcnow()
+#     }
+
+#     db.orders.insert_one(new_order)
+
+#     return {
+#         "success": True,
+#         "message": "Order placed successfully"
+#     }
+# # =========================
+# # ✅ GET MY ORDERS
+# # =========================
+# @router.get("/my-orders")
+# def get_my_orders(user=Depends(subscription_guard)):
+
+#     store = db.stores.find_one({"owner_id": str(user["_id"])})
+
+#     if not store:
+#         raise HTTPException(404, "Store not found")
+
+#     all_orders = list(db.orders.find({
+#         "store_id": store["store_id"]
+#     }).sort("created_at", -1))
+
+#     return [
+#         {
+#             "id": str(order["_id"]),
+#             "customer_name": order.get("customer_name", "Guest"),
+#             "table": order.get("table", "N/A"),
+#             "items": order["items"],
+#             "total": order["total"],
+#             "status": order["status"]
+#         }
+#         for order in all_orders
+#     ]
+
+
+# # =========================
+# # ✅ UPDATE ORDER STATUS (SECURE)
+# # =========================
+# from pydantic import BaseModel
+
+# class StatusUpdate(BaseModel):
+#     status: str
+
+# @router.put("/update-status/{order_id}")
+# def update_order_status(order_id: str, data: StatusUpdate, user=Depends(get_current_user)):
+
+#     store = db.stores.find_one({"owner_id": str(user["_id"])})
+
+#     if not store:
+#         raise HTTPException(404, "Store not found")
+
+#     order = db.orders.find_one({
+#         "_id": ObjectId(order_id),
+#         "store_id": store["store_id"]
+#     })
+
+#     if not order:
+#         raise HTTPException(404, "Order not found")
+
+#     db.orders.update_one(
+#         {"_id": ObjectId(order_id)},
+#         {"$set": {"status": data.status}}
+#     )
+
+#     return {"message": "Status updated"}
+
+# @router.get("/stats")
+# def get_stats(user=Depends(get_current_user)):
+
+#     store = db.stores.find_one({"owner_id": str(user["_id"])})
+
+#     if not store:
+#         raise HTTPException(404, "Store not found")
+
+#     orders = list(db.orders.find({
+#         "store_id": store["store_id"]
+#     }))
+
+#     total_orders = len(orders)
+
+#     total_revenue = sum(order.get("total", 0) for order in orders)
+
+#     return {
+#         "total_orders": total_orders,
+#         "total_revenue": total_revenue
+#     }
+
+from fastapi import APIRouter, HTTPException, Depends
+from datetime import datetime
+from bson import ObjectId
+from pydantic import BaseModel
+from app.models.order import OrderCreate
+from app.core.subscription import subscription_guard
+from app.database.mongodb import db
+
+router = APIRouter(prefix="/order", tags=["Order"])
+
+orders = db.orders
+products = db.products
+stores = db.stores
+
+
+# =========================
+# ✅ CREATE ORDER (ATOMIC + SAFE)
+# =========================
+@router.post("/create")
+def create_order(data: OrderCreate):
+
+    updated_items = []
+    total = 0
+
+    for item in data.items:
+
+        product = products.find_one({
+            "_id": ObjectId(item.product_id)
+        })
+
+        if not product:
+            raise HTTPException(404, "Product not found")
+
+        # 🔥 ATOMIC STOCK UPDATE
+        result = products.update_one(
+            {
+                "_id": product["_id"],
+                "stock": {"$gte": item.qty}
+            },
+            {
+                "$inc": {"stock": -item.qty}
+            }
+        )
+
+        if result.modified_count == 0:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Only {product['stock']} {product['name']} available"
+            )
+
+        updated_items.append({
+            "name": product["name"],
+            "price": product["price"],
+            "qty": item.qty
+        })
+
+        total += product["price"] * item.qty
+
+    orders.insert_one({
+        "store_id": data.store_id,
+        "customer_name": data.customer_name,
+        "table": data.table,
+        "items": updated_items,
+        "total": total,
+        "status": "pending",
+        "created_at": datetime.utcnow()
+    })
+
+    return {
+        "success": True,
+        "message": "Order placed successfully"
+    }
+
+# =========================
+# ✅ GET MY ORDERS (SUBSCRIPTION PROTECTED)
+# =========================
+@router.get("/my-orders")
+def get_my_orders(user=Depends(subscription_guard)):
+
+    store = stores.find_one({"owner_id": str(user["_id"])})
+
+    if not store:
+        raise HTTPException(404, "Store not found")
+
+    all_orders = list(orders.find({
+        "store_id": store["store_id"]
+    }).sort("created_at", -1))
+
+    return [
+        {
+            "id": str(order["_id"]),
+            "customer_name": order.get("customer_name", "Guest"),
+            "table": order.get("table", "N/A"),
+            "items": order["items"],
+            "total": order["total"],
+            "status": order["status"]
+        }
+        for order in all_orders
+    ]
+
+
+# =========================
+# ✅ UPDATE STATUS (SECURE)
+# =========================
+class StatusUpdate(BaseModel):
+    status: str
+
+
+@router.put("/update-status/{order_id}")
+def update_order_status(order_id: str, data: StatusUpdate, user=Depends(subscription_guard)):
+
+    store = stores.find_one({"owner_id": str(user["_id"])})
+
+    if not store:
+        raise HTTPException(404, "Store not found")
+
+    order = orders.find_one({
+        "_id": ObjectId(order_id),
+        "store_id": store["store_id"]
+    })
+
+    if not order:
+        raise HTTPException(404, "Order not found")
+
+    orders.update_one(
+        {"_id": ObjectId(order_id)},
+        {"$set": {"status": data.status}}
+    )
+
+    return {"message": "Status updated"}
+
+
+# =========================
+# ✅ STATS (SUBSCRIPTION PROTECTED)
+# =========================
+@router.get("/stats")
+def get_stats(user=Depends(subscription_guard)):
+
+    store = stores.find_one({"owner_id": str(user["_id"])})
+
+    if not store:
+        raise HTTPException(404, "Store not found")
+
+    all_orders = list(orders.find({
+        "store_id": store["store_id"]
+    }))
+
+    total_orders = len(all_orders)
+    total_revenue = sum(order.get("total", 0) for order in all_orders)
+
+    return {
+        "total_orders": total_orders,
+        "total_revenue": total_revenue
+    }
