@@ -9,8 +9,8 @@ router = APIRouter(prefix="/subscription", tags=["Subscription"])
 
 @router.post("/create-order")
 def create_payment_order(user=Depends(get_current_user)):
-    return create_order()
-
+    
+    return create_order(str(user["_id"]))   # 🔥 pass user_id
 
 @router.post("/verify-payment")
 def verify_payment(data: dict, user=Depends(get_current_user)):

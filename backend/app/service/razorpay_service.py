@@ -9,11 +9,16 @@ client = razorpay.Client(
 )
 
 # ✅ CREATE ORDER
-def create_order():
+def create_order(user_id: str):
     return client.order.create({
         "amount": 1099 * 100,
         "currency": "INR",
-        "payment_capture": 1
+        "payment_capture": 1,
+
+        # 🔥🔥 IMPORTANT
+        "notes": {
+            "user_id": user_id
+        }
     })
 
 
