@@ -23,7 +23,7 @@ import {
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [subInfo, setSubInfo] = useState(null);
-
+  const API = process.env.NEXT_PUBLIC_API_URL;
   useEffect(() => {
     fetchSubscription();
   }, []);
@@ -38,7 +38,7 @@ export default function OrdersPage() {
 
   const fetchSubscription = async () => {
     const res = await fetch(
-      "https://scan-menu-fastapi.onrender.com/subscription/info",
+      `${API}/subscription/info`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -53,7 +53,7 @@ export default function OrdersPage() {
   const fetchOrders = async () => {
     try {
       const res = await fetch(
-        "https://scan-menu-fastapi.onrender.com/order/my-orders",
+        `${API}/order/my-orders`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,

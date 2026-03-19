@@ -24,11 +24,11 @@ export default function AddProduct() {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-
+  const API = process.env.NEXT_PUBLIC_API_URL;
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    await fetch("https://scan-menu-fastapi.onrender.com/product/add", {
+   
+    await fetch(`${API}/product/add`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

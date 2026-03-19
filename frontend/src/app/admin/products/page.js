@@ -23,14 +23,14 @@ import {
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [editing, setEditing] = useState(null);
-
+  const API = process.env.NEXT_PUBLIC_API_URL;
   useEffect(() => {
     fetchProducts();
   }, []);
 
   const fetchProducts = async () => {
     const res = await fetch(
-      "https://scan-menu-fastapi.onrender.com/product/my-products",
+      `${API}/product/my-products`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -44,7 +44,7 @@ export default function ProductsPage() {
 
   const deleteProduct = async (id) => {
     await fetch(
-      `https://scan-menu-fastapi.onrender.com/product/delete/${id}`,
+      `${API}/product/delete/${id}`,
       {
         method: "DELETE",
         headers: {
@@ -58,7 +58,7 @@ export default function ProductsPage() {
 
   const updateProduct = async () => {
     await fetch(
-      `https://scan-menu-fastapi.onrender.com/product/update/${editing.id}`,
+      `${API}/product/update/${editing.id}`,
       {
         method: "PUT",
         headers: {

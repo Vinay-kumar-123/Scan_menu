@@ -23,7 +23,7 @@ export default function StorePage() {
 
   const [name, setName] = useState("");
   const [table, setTable] = useState("");
-
+  const API = process.env.NEXT_PUBLIC_API_URL;
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -31,7 +31,7 @@ export default function StorePage() {
   const fetchProducts = async () => {
     try {
       const res = await fetch(
-        `https://scan-menu-fastapi.onrender.com/product/${storeId}`
+        `${API}/product/${storeId}`
       );
 
       if (!res.ok) {

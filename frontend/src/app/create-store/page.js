@@ -17,7 +17,7 @@ import { Store, MapPin } from "lucide-react";
 
 export default function CreateStore() {
   const router = useRouter();
-
+  const API = process.env.NEXT_PUBLIC_API_URL;
   const [form, setForm] = useState({
     name: "",
     location: "",
@@ -38,7 +38,7 @@ export default function CreateStore() {
 
     try {
       const res = await fetch(
-        "https://scan-menu-fastapi.onrender.com/store/create",
+        `${API}/store/create`,
         {
           method: "POST",
           headers: {

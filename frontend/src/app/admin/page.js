@@ -20,7 +20,7 @@ import {
 
 export default function Dashboard() {
   const router = useRouter();
-
+  const API = process.env.NEXT_PUBLIC_API_URL;
   const [subInfo, setSubInfo] = useState(null);
   const [store, setStore] = useState(null);
   const [stats, setStats] = useState({
@@ -37,13 +37,13 @@ export default function Dashboard() {
 
     try {
       const [storeRes, statsRes, subRes] = await Promise.all([
-        fetch("https://scan-menu-fastapi.onrender.com/store/my-store", {
+        fetch(`${API}/store/my-store`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("https://scan-menu-fastapi.onrender.com/order/stats", {
+        fetch(`${API}/order/stats`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("https://scan-menu-fastapi.onrender.com/subscription/info", {
+        fetch(`${API}/subscription/info`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
