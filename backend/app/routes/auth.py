@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from datetime import datetime, timezone, timedelta
+from pymongo.errors import DuplicateKeyError
+
 from app.models.user import UserCreate, UserLogin
 from app.database.mongodb import db
 from app.core.security import hash_password, verify_password, create_token
@@ -10,27 +12,33 @@ users = db["users"]
 
 
 # =========================
-# ✅ SIGNUP
+# ✅ SIGNUP (FINAL)
 # =========================
 @router.post("/signup")
 def signup(user: UserCreate):
 
-    if users.find_one({"email": user.email}):
-        raise HTTPException(status_code=400, detail="Email already exists")
+    # 🔥 normalize email
+    email = user.email.lower()
 
     new_user = {
         "name": user.name,
-        "email": user.email,
+        "email": email,
         "phone": user.phone,
         "password": hash_password(user.password),
-       "trialStart": datetime.now(timezone.utc),
-       "trialEnd": datetime.now(timezone.utc) + timedelta(days=7),
+        "trialStart": datetime.now(timezone.utc),
+        "trialEnd": datetime.now(timezone.utc) + timedelta(days=7),
         "isSubscribed": False,
         "subscriptionExpiry": None,
         "created_at": datetime.now(timezone.utc)
     }
 
-    result = users.insert_one(new_user)
+    try:
+        result = users.insert_one(new_user)
+    except DuplicateKeyError:
+        raise HTTPException(
+            status_code=400,
+            detail="Email or phone already exists"
+        )
 
     token = create_token({
         "user_id": str(result.inserted_id)
@@ -39,20 +47,23 @@ def signup(user: UserCreate):
     return {
         "token": token,
         "user": {
+            "id": str(result.inserted_id),
             "name": user.name,
-            "email": user.email
+            "email": email
         },
-        "has_store": False   # 🔥 IMPORTANT
+        "has_store": False
     }
 
 
 # =========================
-# ✅ LOGIN
+# ✅ LOGIN (FINAL)
 # =========================
 @router.post("/login")
 def login(data: UserLogin):
 
-    user = users.find_one({"email": data.email})
+    email = data.email.lower()
+
+    user = users.find_one({"email": email})
 
     if not user or not verify_password(data.password, user["password"]):
         raise HTTPException(401, "Invalid credentials")
