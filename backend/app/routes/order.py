@@ -178,9 +178,11 @@ stores = db.stores
 @router.post("/create")
 def create_order(data: OrderCreate):
 
-    updated_items = []
-    total = 0
+    products_data = []
 
+    # =========================
+    # ✅ STEP 1: VALIDATE ALL ITEMS
+    # =========================
     for item in data.items:
 
         product = products.find_one({
@@ -190,22 +192,26 @@ def create_order(data: OrderCreate):
         if not product:
             raise HTTPException(404, "Product not found")
 
-        # 🔥 ATOMIC STOCK UPDATE
-        result = products.update_one(
-            {
-                "_id": product["_id"],
-                "stock": {"$gte": item.qty}
-            },
-            {
-                "$inc": {"stock": -item.qty}
-            }
-        )
-
-        if result.modified_count == 0:
+        if product["stock"] < item.qty:
             raise HTTPException(
                 status_code=400,
                 detail=f"Only {product['stock']} {product['name']} available"
             )
+
+        products_data.append(product)
+
+    # =========================
+    # ✅ STEP 2: UPDATE STOCK (SAFE)
+    # =========================
+    updated_items = []
+    total = 0
+
+    for item, product in zip(data.items, products_data):
+
+        products.update_one(
+            {"_id": product["_id"]},
+            {"$inc": {"stock": -item.qty}}   # 🔥 better than set
+        )
 
         updated_items.append({
             "name": product["name"],
@@ -215,6 +221,9 @@ def create_order(data: OrderCreate):
 
         total += product["price"] * item.qty
 
+    # =========================
+    # ✅ STEP 3: CREATE ORDER
+    # =========================
     orders.insert_one({
         "store_id": data.store_id,
         "customer_name": data.customer_name,
@@ -229,7 +238,6 @@ def create_order(data: OrderCreate):
         "success": True,
         "message": "Order placed successfully"
     }
-
 # =========================
 # ✅ GET MY ORDERS (SUBSCRIPTION PROTECTED)
 # =========================
