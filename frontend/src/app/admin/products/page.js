@@ -11,7 +11,7 @@ export default function ProductsPage() {
   }, []);
 
   const fetchProducts = async () => {
-    const res = await fetch("http://127.0.0.1:8000/product/my-products", {
+    const res = await fetch("https://scan-menu-fastapi.onrender.com/product/my-products", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
@@ -23,7 +23,7 @@ export default function ProductsPage() {
 
   // 🗑️ DELETE
   const deleteProduct = async (id) => {
-    await fetch(`http://127.0.0.1:8000/product/delete/${id}`, {
+    await fetch(`https://scan-menu-fastapi.onrender.com/product/delete/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -35,7 +35,7 @@ export default function ProductsPage() {
 
   // ✏️ UPDATE
   const updateProduct = async () => {
-    await fetch(`http://127.0.0.1:8000/product/update/${editing.id}`, {
+    await fetch(`https://scan-menu-fastapi.onrender.com/product/update/${editing.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

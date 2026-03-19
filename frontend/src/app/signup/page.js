@@ -45,7 +45,7 @@ export default function AuthPage() {
 
       // ✅ Save token
       localStorage.setItem("token", data.token);
-
+      localStorage.setItem("userId", data.user.id);
       // 🔥 FIXED REDIRECT LOGIC
       if (data.has_store) {
         router.push("/admin");
@@ -53,7 +53,17 @@ export default function AuthPage() {
         router.push("/create-store");
       }
     } catch (err) {
-      setError(err.response?.data?.detail || "Something went wrong");
+      const detail = err.response?.data?.detail;
+
+      let message = "Something went wrong";
+
+      if (Array.isArray(detail)) {
+        message = detail[0]?.msg; // 🔥 MOST IMPORTANT FIX
+      } else if (typeof detail === "string") {
+        message = detail;
+      }
+
+      setError(message);
     } finally {
       setLoading(false);
     }

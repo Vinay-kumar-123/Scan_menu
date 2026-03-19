@@ -18,7 +18,7 @@ export default function StorePage() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/product/${storeId}`);
+      const res = await fetch(`https://scan-menu-fastapi.onrender.com/product/${storeId}`);
 
       if (!res.ok) {
         console.log("API error");
@@ -62,7 +62,7 @@ export default function StorePage() {
 
     const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
     try {
-      const res = await fetch("http://127.0.0.1:8000/order/create", {
+      const res = await fetch("https://scan-menu-fastapi.onrender.com/order/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -82,7 +82,7 @@ export default function StorePage() {
       const data = await res.json(); // ✅ now correct
 
       if (!res.ok) {
-        alert(JSON.stringify(data));
+        alert(data.detail);
 
         return;
       }

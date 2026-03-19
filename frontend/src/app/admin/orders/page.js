@@ -140,7 +140,7 @@ export default function OrdersPage() {
   }, [subInfo]);
 
   const fetchSubscription = async () => {
-    const res = await fetch("http://127.0.0.1:8000/subscription/info", {
+    const res = await fetch("https://scan-menu-fastapi.onrender.com/subscription/info", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
@@ -152,7 +152,7 @@ export default function OrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/order/my-orders", {
+      const res = await fetch("https://scan-menu-fastapi.onrender.com/order/my-orders", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -168,7 +168,7 @@ export default function OrdersPage() {
   };
 
   const updateStatus = async (id, status) => {
-    await fetch(`http://127.0.0.1:8000/order/update-status/${id}`, {
+    await fetch(`https://scan-menu-fastapi.onrender.com/order/update-status/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

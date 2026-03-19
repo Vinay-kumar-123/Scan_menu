@@ -7,10 +7,13 @@ export default function UpgradeButton() {
   const loadRazorpay = () =>
     new Promise((resolve) => {
       if (window.Razorpay) return resolve(true);
+
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
+
       script.onload = () => resolve(true);
       script.onerror = () => resolve(false);
+
       document.body.appendChild(script);
     });
 
@@ -18,43 +21,58 @@ export default function UpgradeButton() {
 
     const ok = await loadRazorpay();
     if (!ok) {
-      alert("Razorpay failed");
+      alert("Razorpay SDK failed ❌");
       return;
     }
 
-    const orderRes = await subscriptionAPI.createOrder();
-    const order = orderRes.data;
+    try {
+      const orderRes = await subscriptionAPI.createOrder();
+      const order = orderRes.data;
 
-    const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-      amount: order.amount,
-      currency: "INR",
-      order_id: order.id,
+      const userId = localStorage.getItem("userId");
 
-      name: "QR Scan & Order",
-      description: "Monthly Subscription",
-
-      handler: async function (response) {
-
-        await subscriptionAPI.verifyPayment({
-          razorpay_order_id: response.razorpay_order_id,
-          razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_signature: response.razorpay_signature,
-        });
-
-        alert("Payment successful ✅");
-        window.location.reload();
+      if (!userId) {
+        alert("Login again");
+        return;
       }
-    };
 
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: "INR",
+        order_id: order.id,
+
+        name: "QR Scan & Order",
+        description: "Monthly Subscription",
+
+        // 🔥 VERY IMPORTANT
+        notes: {
+          user_id: userId,
+        },
+
+        handler: function () {
+          alert("Payment successful ✅");
+          window.location.reload();
+        },
+
+        theme: {
+          color: "#f97316",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+
+    } catch (err) {
+      console.log(err);
+      alert("Payment failed ❌");
+    }
   };
 
   return (
     <button
       onClick={handleUpgrade}
-      className="bg-orange-500 text-white px-6 py-2 rounded"
+      className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold"
     >
       Upgrade ₹1099 / month
     </button>

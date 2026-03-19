@@ -17,7 +17,7 @@ export default function AddProduct() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    await fetch("http://127.0.0.1:8000/product/add", {
+    await fetch("https://scan-menu-fastapi.onrender.com/product/add", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

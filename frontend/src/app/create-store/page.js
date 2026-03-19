@@ -26,7 +26,7 @@ export default function CreateStore() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/store/create", {
+      const res = await fetch("https://scan-menu-fastapi.onrender.com/store/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

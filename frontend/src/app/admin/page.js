@@ -144,13 +144,13 @@ export default function Dashboard() {
 
     try {
       const [storeRes, statsRes, subRes] = await Promise.all([
-        fetch("http://127.0.0.1:8000/store/my-store", {
+        fetch("https://scan-menu-fastapi.onrender.com/store/my-store", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("http://127.0.0.1:8000/order/stats", {
+        fetch("https://scan-menu-fastapi.onrender.com/order/stats", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("http://127.0.0.1:8000/subscription/info", {
+        fetch("https://scan-menu-fastapi.onrender.com/subscription/info", {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
