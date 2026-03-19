@@ -11,7 +11,7 @@ def create_indexes():
         )
 
         # 🔥 UNIQUE PHONE
-        db.users.create_index("phone", unique=True)
+        
 
         print("✅ Indexes created successfully")
 
