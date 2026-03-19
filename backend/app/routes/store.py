@@ -21,7 +21,7 @@ def create_store(data: StoreCreate, user=Depends(get_current_user)):
 
     store_id = str(uuid.uuid4())[:8]
 
-    store_url = f"http://localhost:3000/store/{store_id}"
+    store_url = f"https://scanbite-five.vercel.app/store/{store_id}"
 
     new_store = {
         "name": data.name,
