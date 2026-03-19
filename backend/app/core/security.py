@@ -12,10 +12,6 @@ def hash_password(password: str):
 def verify_password(plain :str, hashed:str)-> bool:
    return password_context.verify(plain.strip(), hashed)
 
-# def create_token(data: dict):
-#     payload = data.copy()
-#     payload["exp"] = datetime.now(timezone.utc) + timedelta(days=7)
-#     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
 def create_token(data: dict):
     payload = data.copy()

@@ -1,121 +1,4 @@
-// "use client";
 
-// import { useEffect, useState } from "react";
-// import { QRCodeCanvas } from "qrcode.react";
-// import { useRouter } from "next/navigation";
-// import UpgradeButton from "@/components/UpgradeButton";
-// import SubscriptionBadge from "@/components/SubscriptionBadge";
-
-// export default function Dashboard() {
-//   const router = useRouter();
-//   const [subInfo, setSubInfo] = useState(null);
-//   const [store, setStore] = useState(null);
-//   const [stats, setStats] = useState({
-//     total_orders: 0,
-//     total_revenue: 0,
-//   });
-
-//   useEffect(() => {
-//     fetchStore();
-//     fetchStats();
-//     fetchSubscription();
-//   }, []);
-
-//   const fetchStore = async () => {
-//     const res = await fetch("http://127.0.0.1:8000/store/my-store", {
-//       headers: {
-//         Authorization: `Bearer ${localStorage.getItem("token")}`,
-//       },
-//     });
-//     if (!res.ok) {
-//       router.push("/create-store"); // 🔥 BLOCK ACCESS
-//     }
-//     const data = await res.json();
-//     setStore(data);
-//   };
-
-//   const fetchStats = async () => {
-//     const res = await fetch("http://127.0.0.1:8000/order/stats", {
-//       headers: {
-//         Authorization: `Bearer ${localStorage.getItem("token")}`,
-//       },
-//     });
-
-//     const data = await res.json();
-//     setStats(data);
-//   };
-
-//   const fetchSubscription = async () => {
-//     const res = await fetch("http://127.0.0.1:8000/subscription/info", {
-//       headers: {
-//         Authorization: `Bearer ${localStorage.getItem("token")}`,
-//       },
-//     });
-
-//     const data = await res.json();
-//     setSubInfo(data);
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-orange-50 p-6">
-//       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
-//       <div className="flex justify-between items-center mb-4">
-//         <SubscriptionBadge info={subInfo} />
-
-//         {subInfo?.plan === "NONE" && (
-//           <UpgradeButton /> // 🔥 SHOW BUTTON
-//         )}
-//       </div>
-//       {/* GRID */}
-//       <div className="grid md:grid-cols-3 gap-6">
-//         {/* STORE CARD */}
-//         <div className="bg-white p-6 rounded-xl shadow">
-//           <h2 className="text-xl font-bold">{store?.name}</h2>
-//           <p className="text-gray-500 mb-4">{store?.location}</p>
-
-//           <div className="flex justify-center mb-4">
-//             <QRCodeCanvas value={store?.store_url || ""} size={150} />
-//           </div>
-
-//           <p className="text-xs break-all text-center">{store?.store_url}</p>
-//         </div>
-
-//         {/* ACTIONS */}
-//         <div className="bg-white p-6 rounded-xl shadow flex flex-col gap-4">
-//           <h2 className="font-bold">Quick Actions</h2>
-
-//           <button
-//             onClick={() => router.push("/admin/add-product")}
-//             className="bg-orange-500 text-white py-2 rounded"
-//           >
-//             ➕ Add Product
-//           </button>
-
-//           <button
-//             onClick={() => router.push("/admin/products")}
-//             className="bg-blue-500 text-white py-2 rounded"
-//           >
-//             📦 View Products
-//           </button>
-
-//           <button
-//             onClick={() => router.push("/admin/orders")}
-//             className="bg-green-500 text-white py-2 rounded"
-//           >
-//             🧾 View Orders
-//           </button>
-//         </div>
-
-//         {/* STATS (future ready) */}
-//         <div className="bg-white p-6 rounded-xl shadow">
-//           <h2 className="font-bold mb-2">Stats</h2>
-//           <p>Orders: {stats.total_orders}</p>
-//           <p>Revenue: ₹{stats.total_revenue}</p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
 
 "use client";
 
@@ -124,6 +7,16 @@ import { QRCodeCanvas } from "qrcode.react";
 import { useRouter } from "next/navigation";
 import UpgradeButton from "@/components/UpgradeButton";
 import SubscriptionBadge from "@/components/SubscriptionBadge";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Store,
+  Package,
+  ShoppingCart,
+  PlusCircle,
+  IndianRupee,
+} from "lucide-react";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -167,87 +60,144 @@ export default function Dashboard() {
       setStore(storeData);
       setStats(statsData);
       setSubInfo(subData);
-
     } catch (err) {
       console.log(err);
     }
   };
 
   return (
-    <div className="min-h-screen bg-orange-50 p-6">
-      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-orange-50 px-4 py-6 md:px-8">
 
-      {/* 🔥 SUBSCRIPTION */}
-      <div className="flex justify-between items-center mb-4">
-        <SubscriptionBadge info={subInfo} />
-        {subInfo?.plan === "NONE" && <UpgradeButton />}
+      {/* HEADER */}
+      <div className="flex flex-col gap-3 md:flex-row md:justify-between md:items-center mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+          Dashboard
+        </h1>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <SubscriptionBadge info={subInfo} />
+          {subInfo?.plan === "NONE" && <UpgradeButton />}
+        </div>
       </div>
 
-      {/* 🔥 BLOCK UI */}
+      {/* ALERT */}
       {subInfo?.plan === "NONE" && (
-        <div className="bg-red-100 text-red-700 p-3 rounded mb-6 text-center">
+        <div className="mb-5 bg-red-100 text-red-600 text-sm font-medium text-center py-2 rounded-lg">
           Your subscription expired 🚀 Upgrade to continue
         </div>
       )}
 
-      <div className="grid md:grid-cols-3 gap-6">
+      {/* GRID */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
         {/* STORE */}
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-xl font-bold">{store?.name}</h2>
-          <p className="text-gray-500 mb-4">{store?.location}</p>
+        <Card className="rounded-2xl shadow-sm hover:shadow-lg transition bg-white">
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Store className="text-orange-500" size={18} />
+            <CardTitle className="text-base md:text-lg text-gray-800">
+              {store?.name || "Store Name"}
+            </CardTitle>
+          </CardHeader>
 
-          <div className="flex justify-center mb-4">
-            <QRCodeCanvas value={store?.store_url || ""} size={150} />
-          </div>
+          <CardContent className="flex flex-col items-center text-center gap-2">
+            <p className="text-sm text-gray-500">
+              {store?.location || "Location"}
+            </p>
 
-          <p className="text-xs break-all text-center">{store?.store_url}</p>
-        </div>
+            <div className="p-3 bg-gray-50 rounded-xl shadow-inner">
+              <QRCodeCanvas value={store?.store_url || ""} size={120} />
+            </div>
+
+            <p className="text-xs text-gray-400 break-all">
+              {store?.store_url}
+            </p>
+          </CardContent>
+        </Card>
 
         {/* ACTIONS */}
-        <div className="bg-white p-6 rounded-xl shadow flex flex-col gap-4">
-          <h2 className="font-bold">Quick Actions</h2>
+        <Card className="rounded-2xl shadow-sm hover:shadow-lg transition bg-white">
+          <CardHeader>
+            <CardTitle className="text-base md:text-lg text-gray-800">
+              Quick Actions
+            </CardTitle>
+          </CardHeader>
 
-          <button
-            onClick={() =>
-              subInfo?.plan === "NONE"
-                ? alert("Upgrade required")
-                : router.push("/admin/add-product")
-            }
-            className="bg-orange-500 text-white py-2 rounded"
-          >
-            ➕ Add Product
-          </button>
+          <CardContent className="flex flex-col gap-3">
 
-          <button
-            onClick={() =>
-              subInfo?.plan === "NONE"
-                ? alert("Upgrade required")
-                : router.push("/admin/products")
-            }
-            className="bg-blue-500 text-white py-2 rounded"
-          >
-            📦 View Products
-          </button>
+            <Button
+              className="justify-start gap-2 text-sm font-medium hover:scale-[1.02] transition"
+              onClick={() =>
+                subInfo?.plan === "NONE"
+                  ? alert("Upgrade required")
+                  : router.push("/admin/add-product")
+              }
+            >
+              <PlusCircle size={16} />
+              Add Product
+            </Button>
 
-          <button
-            onClick={() =>
-              subInfo?.plan === "NONE"
-                ? alert("Upgrade required")
-                : router.push("/admin/orders")
-            }
-            className="bg-green-500 text-white py-2 rounded"
-          >
-            🧾 View Orders
-          </button>
-        </div>
+            <Button
+              variant="secondary"
+              className="justify-start gap-2 text-sm font-medium hover:scale-[1.02] transition"
+              onClick={() =>
+                subInfo?.plan === "NONE"
+                  ? alert("Upgrade required")
+                  : router.push("/admin/products")
+              }
+            >
+              <Package size={16} />
+              View Products
+            </Button>
+
+            <Button
+              variant="outline"
+              className="justify-start gap-2 text-sm font-medium hover:scale-[1.02] transition"
+              onClick={() =>
+                subInfo?.plan === "NONE"
+                  ? alert("Upgrade required")
+                  : router.push("/admin/orders")
+              }
+            >
+              <ShoppingCart size={16} />
+              View Orders
+            </Button>
+
+          </CardContent>
+        </Card>
 
         {/* STATS */}
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="font-bold mb-2">Stats</h2>
-          <p>Orders: {stats.total_orders}</p>
-          <p>Revenue: ₹{stats.total_revenue}</p>
-        </div>
+        <Card className="rounded-2xl shadow-sm hover:shadow-lg transition bg-white">
+          <CardHeader>
+            <CardTitle className="text-base md:text-lg text-gray-800">
+              Stats Overview
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="flex flex-col gap-3">
+
+            <div className="flex items-center justify-between bg-orange-50 p-3 rounded-xl">
+              <div>
+                <p className="text-xs text-gray-500">Total Orders</p>
+                <h3 className="text-lg font-bold text-gray-900">
+                  {stats.total_orders}
+                </h3>
+              </div>
+              <ShoppingCart className="text-orange-500" />
+            </div>
+
+            <div className="flex items-center justify-between bg-green-50 p-3 rounded-xl">
+              <div>
+                <p className="text-xs text-gray-500">Revenue</p>
+                <h3 className="text-lg font-bold text-gray-900">
+                  ₹{stats.total_revenue}
+                </h3>
+              </div>
+              <IndianRupee className="text-green-600" />
+            </div>
+
+          </CardContent>
+        </Card>
+
       </div>
     </div>
   );

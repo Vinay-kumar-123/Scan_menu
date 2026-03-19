@@ -1,8 +1,19 @@
+
+
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { authAPI } from "@/lib/api";
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Store, MapPin } from "lucide-react";
 
 export default function CreateStore() {
   const router = useRouter();
@@ -26,14 +37,17 @@ export default function CreateStore() {
     setLoading(true);
 
     try {
-      const res = await fetch("https://scan-menu-fastapi.onrender.com/store/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(form),
-      });
+      const res = await fetch(
+        "https://scan-menu-fastapi.onrender.com/store/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(form),
+        }
+      );
 
       const data = await res.json();
 
@@ -42,9 +56,7 @@ export default function CreateStore() {
         return;
       }
 
-      // success
       router.push("/admin");
-
     } catch (err) {
       alert("Error creating store");
     } finally {
@@ -53,40 +65,67 @@ export default function CreateStore() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-orange-50">
-      <div className="bg-white p-8 rounded-xl shadow w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-orange-50 flex items-center justify-center px-4 py-6">
 
-        <h2 className="text-2xl font-bold mb-4">
-          Create Your Restaurant
-        </h2>
+      <Card className="w-full max-w-md rounded-2xl shadow-lg bg-white">
+        
+        <CardHeader className="text-center">
+          <CardTitle className="text-xl md:text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
+            <Store size={20} /> Create Your Restaurant
+          </CardTitle>
+          <p className="text-sm text-gray-500 mt-1">
+            Set up your store to start receiving orders
+          </p>
+        </CardHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <CardContent>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
-          <input
-            name="name"
-            placeholder="Restaurant Name"
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
+            {/* NAME */}
+            <div>
+              <label className="text-sm text-gray-600 mb-1 block">
+                Restaurant Name
+              </label>
+              <Input
+                name="name"
+                placeholder="e.g. Vikash Restaurant"
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          <input
-            name="location"
-            placeholder="City / Location"
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
+            {/* LOCATION */}
+            <div>
+              <label className="text-sm text-gray-600 mb-1 block">
+                Location
+              </label>
+              <div className="relative">
+                <MapPin
+                  size={16}
+                  className="absolute left-3 top-3 text-gray-400"
+                />
+                <Input
+                  name="location"
+                  placeholder="City / Area"
+                  onChange={handleChange}
+                  className="pl-8"
+                  required
+                />
+              </div>
+            </div>
 
-          <button
-            className="w-full bg-orange-500 text-white py-2 rounded"
-            disabled={loading}
-          >
-            {loading ? "Creating..." : "Create Store"}
-          </button>
+            {/* BUTTON */}
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full mt-2 flex items-center justify-center gap-2 text-sm font-medium hover:scale-[1.02] transition"
+            >
+              {loading ? "Creating..." : "Create Store"}
+            </Button>
 
-        </form>
-      </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
