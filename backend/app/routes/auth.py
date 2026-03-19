@@ -68,6 +68,7 @@ def login(data: UserLogin):
     return {
         "token": token,
         "user": {
+            "id": str(user["_id"]),
             "name": user["name"],
             "email": user["email"]
         },
