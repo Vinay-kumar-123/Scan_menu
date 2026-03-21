@@ -39,6 +39,9 @@ app.include_router(order.router)
 app.include_router(subscription.router)
 app.include_router(webhook.router)
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 # =========================
 # ✅ ROOT
 # =========================
