@@ -1,6 +1,6 @@
 
 from fastapi import APIRouter, HTTPException, Depends
-from datetime import datetime
+from datetime import datetime,timezone,timedelta
 from bson import ObjectId
 from pydantic import BaseModel
 from app.models.order import OrderCreate
@@ -90,9 +90,17 @@ def get_my_orders(user=Depends(subscription_guard)):
 
     if not store:
         raise HTTPException(404, "Store not found")
-
+    
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    today_end = today_start + timedelta(days=1)
+    
     all_orders = list(orders.find({
-        "store_id": store["store_id"]
+        "store_id": store["store_id"],
+        "created_at": {
+            "$gte": today_start,
+            "$lt": today_end
+        }
     }).sort("created_at", -1))
 
     return [

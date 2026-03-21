@@ -10,10 +10,10 @@ def create_indexes():
             collation={"locale": "en", "strength": 2}
         )
 
-        # 🔥 UNIQUE PHONE
+        db.orders.create_index([("store_id", 1), ("created_at", -1)])
         
 
-        print("✅ Indexes created successfully")
+       
 
     except OperationFailure as e:
         print("⚠️ Index error:", e)
