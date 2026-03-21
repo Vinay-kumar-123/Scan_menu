@@ -73,7 +73,7 @@ def create_order(data: OrderCreate):
         "items": updated_items,
         "total": total,
         "status": "pending",
-        "created_at": datetime.utcnow()
+        "created_at": datetime.now(timezone.utc)
     })
 
     return {
@@ -150,16 +150,27 @@ def update_order_status(order_id: str, data: StatusUpdate, user=Depends(subscrip
 # =========================
 # ✅ STATS (SUBSCRIPTION PROTECTED)
 # =========================
+
+
 @router.get("/stats")
 def get_stats(user=Depends(subscription_guard)):
 
     store = stores.find_one({"owner_id": str(user["_id"])})
-
     if not store:
         raise HTTPException(404, "Store not found")
 
+    # 🔥 Aaj ka time range (UTC)
+    today_start = datetime.now(timezone.utc).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    today_end = today_start + timedelta(days=1)
+
     all_orders = list(orders.find({
-        "store_id": store["store_id"]
+        "store_id": store["store_id"],
+        "created_at": {
+            "$gte": today_start,
+            "$lt": today_end
+        }
     }))
 
     total_orders = len(all_orders)
