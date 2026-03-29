@@ -72,7 +72,7 @@ export default function OrdersPage() {
 
   const updateStatus = async (id, status) => {
     await fetch(
-      `https://scan-menu-fastapi.onrender.com/order/update-status/${id}`,
+      `${API}/order/update-status/${id}`,
       {
         method: "PUT",
         headers: {
@@ -169,6 +169,7 @@ export default function OrdersPage() {
 
                   <Button
                     variant="secondary"
+                    disabled={order.status === "cancelled"}
                     className="flex-1 gap-1 hover:scale-[1.02] transition"
                     onClick={() => updateStatus(order.id, "preparing")}
                   >
@@ -176,6 +177,7 @@ export default function OrdersPage() {
                   </Button>
 
                   <Button
+                    disabled={order.status === "cancelled"}
                     className="flex-1 gap-1 hover:scale-[1.02] transition"
                     onClick={() => updateStatus(order.id, "completed")}
                   >

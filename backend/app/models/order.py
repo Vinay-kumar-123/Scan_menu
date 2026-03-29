@@ -7,7 +7,8 @@ class OrderItem(BaseModel):
 
 class OrderCreate(BaseModel):
     store_id: str
-    customer_name: str   
+    customer_name: str  
+    session_id: str  
     table: int           
     items: List[OrderItem]
     total: float
