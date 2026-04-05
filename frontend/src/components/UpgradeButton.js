@@ -74,7 +74,7 @@ export default function UpgradeButton() {
       onClick={handleUpgrade}
       className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold"
     >
-      Upgrade ₹1099 / month
+      Upgrade ₹499 / month
     </button>
   );
 }
